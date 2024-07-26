@@ -1,7 +1,6 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -9,14 +8,22 @@ import (
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	flag "github.com/spf13/pflag"
 
 	"github.com/datadrivers/terraform-provider-nexus/publisher"
 )
 
 func main() {
 	zerolog.TimeFieldFormat = zerolog.TimeFormatUnix
-	debug := flag.Bool("v", false, "sets verbose")
-	pretty := flag.Bool("c", false, "sets pretty output")
+	debug := flag.Bool("debug", false, "sets verbose")
+	pretty := flag.Bool("pretty", true, "sets pretty output")
+	// Defaults here are all public hashicorp values
+	repo := flag.String("repo", "none", "GitHub repository path - org/name")
+	org := flag.String("tf-org", "none", "Terraform organization")
+	provider := flag.String("provider", "none", "Provider name")
+	version := flag.String("version", "none", "Provider version without the 'v' prefix, if present")
+	keyID := flag.String("gpg-key", "none", "GPG key ID")
+	regType := flag.String("reg-type", "private", "Terraform registry type")
 	flag.Parse()
 
 	// Default level for this example is info, unless debug flag is present
@@ -28,6 +35,12 @@ func main() {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stdout})
 	}
 
+	if *repo == "none" || *org == "none" || *provider == "none" || *version == "none" || *keyID == "none" {
+		log.Error().Msg("missing required flags")
+		flag.PrintDefaults()
+		os.Exit(1)
+	}
+
 	// get the auth token
 	token := publisher.GetToken()
 
@@ -36,11 +49,12 @@ func main() {
 		Timeout: 30 * time.Second,
 	}
 	providerConfig := publisher.Config{
-		RepositoryPath:  "octoenergy/terraform-provider-nexus",
-		TFOrganization:  "octopus",
-		ProviderName:    "nexus",
-		ProviderVersion: "2.4.0-rc2-bump",
-		GPGKeyId:        "AB1F45DCE1DDA2FE",
+		RepositoryPath:  *repo,
+		TFOrganization:  *org,
+		ProviderName:    *provider,
+		ProviderVersion: *version,
+		GPGKeyId:        *keyID,
+		// TODO: matrix this
 		Platforms: []publisher.Platform{
 			{OS: "linux", Arch: "amd64"},
 			{OS: "linux", Arch: "arm64"},
@@ -49,7 +63,7 @@ func main() {
 			{OS: "windows", Arch: "amd64"},
 			{OS: "windows", Arch: "arm64"},
 		},
-		TFRegistryType: "private",
+		TFRegistryType: *regType,
 		Token:          token,
 	}
 	pub := publisher.Publisher{
@@ -65,7 +79,7 @@ func main() {
 	log.Info().Msg("provider created")
 
 	versionLinks, err := pub.CreateVersion()
-	if err != nil {
+	if err != nil || versionLinks == nil {
 		log.Error().Err(err).Msg("error creating version")
 	}
 	log.Info().Msgf("version created, versionLinks: %v", versionLinks)

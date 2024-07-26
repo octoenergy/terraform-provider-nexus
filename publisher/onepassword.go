@@ -25,7 +25,7 @@ type OnePasswordValue struct {
 	Reference string `json:"reference"`
 }
 
-func GetItemFromOnePassword() OnePasswordItem {
+func GetItemFromOnePassword() *OnePasswordItem {
 	// Call out to the op CLI to avoid needing a service account for 1pass:
 	cmdString := "op --account octoenergy.1password.com item list --tags terraform-tfc-token --format=json"
 	var items []OnePasswordItem
@@ -37,13 +37,14 @@ func GetItemFromOnePassword() OnePasswordItem {
 		log.Warn().Msg("Found more than one item with tag 'terraform-tfc-token', will use the first...")
 	} else if len(items) < 1 {
 		log.Warn().Msg("No items found with tag 'terraform-tfc-token'")
+		return nil
 	}
 	item := items[0]
 	log.Debug().Str("id", item.ID).Str("title", item.Title).Msg("Found item")
-	return item
+	return &item
 }
 
-func GetTokenFromOnePasswordItem(item OnePasswordItem) string {
+func GetTokenFromOnePasswordItem(item *OnePasswordItem) string {
 	// op item get --format=json --fields type=CONCEALED -
 	cmdString := "op item get --format=json --fields type=CONCEALED " + item.ID
 	var value OnePasswordValue
@@ -57,6 +58,9 @@ func GetTokenFromOnePasswordItem(item OnePasswordItem) string {
 
 func ReadTokenFromOnePassword() string {
 	item := GetItemFromOnePassword()
+	if item == nil {
+		return ""
+	}
 	token := GetTokenFromOnePasswordItem(item)
 	return token
 }
