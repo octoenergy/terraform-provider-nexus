@@ -1,0 +1,39 @@
+{
+  "data": {
+    "id": "provver-sfcar1cUgWJKTLfL",
+    "type": "registry-provider-versions",
+    "attributes": {
+      "version": "2.4.0-rc2-bump",
+      "created-at": "2024-07-25T14:58:05.447Z",
+      "updated-at": "2024-07-25T14:58:05.447Z",
+      "key-id": "AB1F45DCE1DDA2FE",
+      "protocols": [
+        "5.0"
+      ],
+      "permissions": {
+        "can-delete": true,
+        "can-upload-asset": true
+      },
+      "shasums-uploaded": false,
+      "shasums-sig-uploaded": false
+    },
+    "relationships": {
+      "registry-provider": {
+        "data": {
+          "id": "prov-WfZFzu2uf12JqANK",
+          "type": "registry-providers"
+        }
+      },
+      "registry-provider-platforms": {
+        "data": [],
+        "links": {
+          "related": "/api/v2/organizations/octopus/registry-providers/private/octopus/nexus/versions/2.4.0-rc2-bump/platforms"
+        }
+      }
+    },
+    "links": {
+      "shasums-upload": "https://archivist.terraform.io/v1/object/dmF1bHQ6djM6aFpIU1hYVGxqU21LN1J5U1oyWnJ1NkI4NTJsWmNCanNqNmU0UUVxbkZZaDRxVHJweHFSa0ZaMnVIMnU0bm1Uek4yeU1UcVo1QWpHTW5MQVp2bnBySER5V2dia3ZOVUVXRVNrZzN2OStpcCtrSks2bVBNWmJaZUp4Z0ZMZUQvUDgySFN5bWw2ZTRod3NHSEV1cG9Ed0lEa0FhU1hqRi9oNWJWM1lraFRUZ1lFZ0lSbnZOOUdWY0pIWFVDbElnNXZYS1dNN09UdmJtK3FhcStTVVdGbHh1dm56RXcyaHVIZkVIWDZJdHNiOXRKVzdNQk5XQlk3TzBFVWo1Rm05Z2xVekw1SkptaUpOUTkyUjlSeHNqYWJOUHJ2b1VpaFJyRW9BSERPMzg3MnNqNjA9",
+      "shasums-sig-upload": "https://archivist.terraform.io/v1/object/dmF1bHQ6djM6MFFuM0FJZzRDWlN2YkRNN2xyWWt4eHJDVHM3YlRwRHNjZFBSNGFCS1NMUDY0Ui94UGNaYi9JM1NJV1ZDU1FCOWFSbE1NazZKUEFLM0tEa0pGR1B2eGZ6LytUTlVEeGRZWi9tMWpTNW1Xd3A4Y0E4NWlVUVA3MjkxdG1ja0JFak12c2FvWVd1V0tPTEswajhTc291b1FIY05nOHVQZktWUExFQm10NWdUdVdQWTZBckxCcTJHMHR3M0ZJZEhQS3VZVXdPUzhzL0Zzai9QcXBuREJiVzJZQWFrdXJTWDFEbXdETEhPT3FmSkljWDZmRUM5bUFnajZjZUtnamZCSHQvVzJSOVYrN3QwSnU3aGJwTCsyVlpOczNvU1BuUVdxVzY5cjgwRUd3c3JZS2VuTmpiMA"
+    }
+  }
+}

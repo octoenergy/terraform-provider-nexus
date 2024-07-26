@@ -10,9 +10,10 @@ You'll need to follow [this link](https://developer.hashicorp.com/terraform/clou
 1. Run `create-provider.sh`
 2. Bump the version in version.json
 3. Run `create-provider-version.sh`
-4. Run `get-sigs.sh`
+4. Run `get-files.sh`
 5. Run `curl -T <file> <url>` for URLs returned by `create-provider-version.sh` to upload signatures
-6. Check `platform.json` and `create-platform.sh` for version numbers
+6. Get sha256 of zip file to but into ...
+6. Check `platform.json` and `create-platform.sh` for version numbers, 
 7. Run `create-platform.sh`
 8. Run `curl -T <file> <url>` with returned URL to upload the binary.
 9. Navigate to https://app.terraform.io/app/octopus/registry/providers/private/octopus/nexus/latest/overview and go to the version. If all is well, you should not see any warning banners. If there's a banner, click Manage Provider -> Show Release Files
