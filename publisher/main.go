@@ -56,14 +56,14 @@ type VersionResponse struct {
 		ID         string `json:"id"`
 		Type       string `json:"type"`
 		Attributes struct {
-			Version            string            `json:"version"`
-			CreatedAt          string            `json:"created-at"`
-			UpdatedAt          string            `json:"updated-at"`
-			KeyID              string            `json:"key-id"`
-			Protocols          []string          `json:"protocols"`
-			Permissions        map[string]string `json:"permissions"`
-			ShasumsUploaded    bool              `json:"shasums-uploaded"`
-			ShasumsSigUploaded bool              `json:"shasums-sign-uploaded"`
+			Version            string          `json:"version"`
+			CreatedAt          string          `json:"created-at"`
+			UpdatedAt          string          `json:"updated-at"`
+			KeyID              string          `json:"key-id"`
+			Protocols          []string        `json:"protocols"`
+			Permissions        map[string]bool `json:"permissions"`
+			ShasumsUploaded    bool            `json:"shasums-uploaded"`
+			ShasumsSigUploaded bool            `json:"shasums-sig-uploaded"`
 		}
 		Relationships map[string]interface{} `json:"relationships"`
 		Links         VersionLinks           `json:"links"`
@@ -75,12 +75,12 @@ type PlatformResponse struct {
 		ID         string `json:"id"`
 		Type       string `json:"type"`
 		Attributes struct {
-			OS                     string            `json:"os"`
-			Arch                   string            `json:"arch"`
-			Shasum                 string            `json:"shasum"`
-			Filename               string            `json:"filename"`
-			Permissions            map[string]string `json:"permissions"`
-			ProviderBinaryUploaded bool              `json:"provider-binary-uploaded"`
+			OS                     string          `json:"os"`
+			Arch                   string          `json:"arch"`
+			Shasum                 string          `json:"shasum"`
+			Filename               string          `json:"filename"`
+			Permissions            map[string]bool `json:"permissions"`
+			ProviderBinaryUploaded bool            `json:"provider-binary-uploaded"`
 		}
 		Relationships map[string]interface{} `json:"relationships"`
 		Links         PlatformLinks          `json:"links"`
@@ -141,7 +141,18 @@ func buildPlatformPayload(sha256, os, arch, filename string) map[string]interfac
 func (p *Publisher) Post(url string, data io.Reader) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodPost, url, data)
 	req.Header.Add("Authorization", "Bearer "+p.Config.Token)
-	req.Header.Add("Content-Type", "application/octet-stream")
+	req.Header.Add("Content-Type", "application/vnd.api+json")
+	if err != nil {
+		return nil, err
+	}
+	return p.Client.Do(req)
+}
+
+// Put sends a PUT request to the given URL with the given io.Reader data
+func (p *Publisher) Put(url string, data io.Reader) (*http.Response, error) {
+	req, err := http.NewRequest(http.MethodPut, url, data)
+	req.Header.Add("Authorization", "Bearer "+p.Config.Token)
+	req.Header.Add("Content-Type", "application/vnd.api+json")
 	if err != nil {
 		return nil, err
 	}
@@ -161,7 +172,7 @@ func (p *Publisher) PostPayload(url string, payload map[string]interface{}) (*ht
 func (p *Publisher) Get(url string) (*http.Response, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	req.Header.Add("Authorization", "Bearer "+p.Config.Token)
-	req.Header.Add("Content-Type", "application/octet-stream")
+	req.Header.Add("Content-Type", "application/vnd.api+json")
 	if err != nil {
 		return nil, err
 	}
@@ -196,7 +207,7 @@ func (p *Publisher) CreateProvider() error {
 		return err
 	}
 	statusCode := resp.StatusCode
-	if statusCode == http.StatusConflict {
+	if statusCode == http.StatusUnprocessableEntity {
 		log.Warn().Msg("provider already exists")
 		return nil
 	}
@@ -224,7 +235,7 @@ func (p *Publisher) CreateVersion() (*NeedsVersionUpload, error) {
 		return nil, err
 	}
 	statusCode := resp.StatusCode
-	if statusCode == http.StatusConflict {
+	if statusCode == http.StatusUnprocessableEntity {
 		log.Warn().Msg("version already exists")
 		return p.GetVersion()
 	}
@@ -262,15 +273,17 @@ func (p *Publisher) GetVersion() (*NeedsVersionUpload, error) {
 		return nil, fmt.Errorf("could not get version: %s", resp.Status)
 	}
 	log.Info().Msg("version exists")
-	var versionResponse VersionResponse
-	err = json.NewDecoder(resp.Body).Decode(&versionResponse)
+	var data map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&data)
+	//var versionResponse VersionResponse
+	//err = json.NewDecoder(resp.Body).Decode(&versionResponse)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse response: %v", err)
 	}
 	needsUpload := NeedsVersionUpload{
-		NeedsShasums:    !versionResponse.Data.Attributes.ShasumsUploaded,
-		NeedsShasumsSig: !versionResponse.Data.Attributes.ShasumsSigUploaded,
-		Links:           &versionResponse.Data.Links,
+		//NeedsShasums:    !versionResponse.Data.Attributes.ShasumsUploaded,
+		//NeedsShasumsSig: !versionResponse.Data.Attributes.ShasumsSigUploaded,
+		//Links:           &versionResponse.Data.Links,
 	}
 
 	return &needsUpload, nil
@@ -341,7 +354,7 @@ func (p *Publisher) UploadFile(url, file string) error {
 	}
 	defer f.Close()
 
-	resp, err := p.Post(url, f)
+	resp, err := p.Put(url, f)
 	if err != nil || resp.StatusCode != http.StatusOK {
 		log.Error().Err(err).Msgf("error uploading file: %s", resp.Status)
 		return err
@@ -355,10 +368,18 @@ func (p *Publisher) UploadSignatures(links *NeedsVersionUpload, files []string) 
 		func() {
 			if strings.HasSuffix(file, "SHA256SUMS.sig") && links.NeedsShasumsSig {
 				url := links.Links.ShasumsSigUpload
+				if url == "" {
+					log.Error().Msg("no signature upload URL")
+					return
+				}
 				errors = append(errors, p.UploadFile(url, file))
 			}
 			if strings.HasSuffix(file, "SHA256SUMS") && links.NeedsShasums {
 				url := links.Links.ShasumsUpload
+				if url == "" {
+					log.Error().Msg("no shasums upload URL")
+					return
+				}
 				errors = append(errors, p.UploadFile(url, file))
 			}
 		}()
@@ -444,7 +465,7 @@ func (p *Publisher) CreatePlatforms(files []string) (*map[string]NeedsPlatformUp
 			p.Config.ProviderVersion,
 		)
 		resp, err := p.PostPayload(url, platformPayload)
-		if resp.StatusCode == http.StatusConflict {
+		if resp.StatusCode == http.StatusUnprocessableEntity {
 			log.Warn().Msg("platform already exists")
 			platformLink, err := p.GetPlatform(platformOS, platformArch)
 			if err != nil {

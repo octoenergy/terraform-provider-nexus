@@ -75,12 +75,14 @@ func main() {
 	err := pub.CreateProvider()
 	if err != nil {
 		log.Error().Err(err).Msg("error creating provider")
+		return
 	}
 	log.Info().Msg("provider created")
 
 	versionLinks, err := pub.CreateVersion()
 	if err != nil || versionLinks == nil {
 		log.Error().Err(err).Msg("error creating version")
+		return
 	}
 	log.Info().Msgf("version created, versionLinks: %v", versionLinks)
 
@@ -88,6 +90,7 @@ func main() {
 	tmpDir, files, err := pub.DownloadArtifacts()
 	if err != nil {
 		log.Error().Err(err).Msg("error downloading artifacts")
+		return
 	}
 	defer os.RemoveAll(tmpDir) // clean up
 
@@ -97,16 +100,19 @@ func main() {
 	err = pub.UploadSignatures(versionLinks, files)
 	if err != nil {
 		log.Error().Err(err).Msg("error uploading signatures")
+		return
 	}
 
 	platformLinks, err := pub.CreatePlatforms(files)
 	if err != nil {
 		log.Error().Err(err).Msg("error creating platforms")
+		return
 	}
 
 	err = pub.UploadPlatforms(platformLinks)
 	if err != nil {
 		log.Error().Err(err).Msg("error uploading platforms")
+		return
 	}
 	log.Info().Msg("all done!")
 	url := fmt.Sprintf(
