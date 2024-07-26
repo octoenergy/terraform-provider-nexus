@@ -30,7 +30,6 @@ endif
 
 build: fmtcheck
 	go build -v .
-	go build -v -o dist/tf-publisher ./publisher/cmd/publisher
 
 test: fmt
 	go test $(TEST) || exit 1
