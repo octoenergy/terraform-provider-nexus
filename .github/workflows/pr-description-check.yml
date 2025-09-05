@@ -1,0 +1,11 @@
+name: PR Description Check
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, edited]
+
+jobs:
+  check-description:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR Description
+        uses: octoenergy/pr-description-checker@v1.0.1
