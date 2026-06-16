@@ -10,12 +10,12 @@ info:
       alias: octoenergy
   x-cortex-slack:
     channels:
-    - id: C0853HWRHKL
-      description: '#tech-team-platform-enablement-monitoring - Enablement team alerting channel for monitoring services'
-      notificationsEnabled: true
     - id: C0853EG15S7
-      description: '#tech-team-platform-enablement - Enablement team channel'
+      description: x-internal-channel
       notificationsEnabled: false
+    - id: C0853HWRHKL
+      description: x-monitoring-alerts-channel
+      notificationsEnabled: true
   x-cortex-groups:
     - services
     - platform
@@ -32,8 +32,18 @@ info:
   - type: ktl-client-hierarchy
     sources:
       - tag: clients/kraken-tech
+  x-cortex-link:
+    - name: Runbook
+      type: RUNBOOK
+      url: https://www.notion.so/kraken-tech/User-Guides-c0346657738c48e99bfc4985e72c028a?source=copy_link
+    - name: Documentation
+      type: documentation
+      url: https://www.notion.so/kraken-tech/Nexus-Repository-Manager-870ce6925718468e9ffe1ca4e87e3e00?source=copy_link
   x-cortex-custom-metadata:
     data-classification:
       value: Internal
       description: "Confidential, Internal or Public. See OEGL Information Classification\
         \ policy for further details: https://drive.google.com/drive/folders/1L8z2mtWjcv3SIOJWr7K2Whcr39vkFg5c"
+    risk-profile:
+      value: Moderate
+      description: ""
