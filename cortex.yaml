@@ -17,9 +17,10 @@ info:
       description: '#tech-team-platform-enablement - Enablement team channel'
       notificationsEnabled: false
   x-cortex-groups:
-    - services
+    - service
+    - type_integration
     - platform
-    - platform-experience
+    - platform_experience
     - nexus
   x-cortex-owners:
   - name: team-platform-experience
@@ -37,3 +38,6 @@ info:
       value: Internal
       description: "Confidential, Internal or Public. See OEGL Information Classification\
         \ policy for further details: https://drive.google.com/drive/folders/1L8z2mtWjcv3SIOJWr7K2Whcr39vkFg5c"
+    risk-profile:
+      value: Low
+      description: ""
